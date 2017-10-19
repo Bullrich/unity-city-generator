@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using UnityEngine;
 
 // By @Bullrich
@@ -9,7 +10,6 @@ namespace CityGenerator
     {
         public GameObject[] buildings;
 
-        // https://youtu.be/sLtelfckEjc?t=13m6s
         public GameObject
             xStreets,
             zStreets,
@@ -20,27 +20,26 @@ namespace CityGenerator
             mapHeight = 20;
 
         private int buildingFootprint = 3;
-        private int[,] mapGrid;
 
-        void Start()
+        private GameObject container;
+
+        private Lot[,] map;
+
+        private void Start()
         {
             GenerateMap();
         }
 
         private void GenerateMap()
         {
-            mapGrid = new int[mapWidth, mapHeight];
+            map = GenerateGrid(Random.Range(0, 50));
+            InstantiateGridElements(map);
+            CalculateCityLots(map);
+        }
 
-            float seed = Random.Range(0, 100);
-
-            // generate map data
-            for (int h = 0; h < mapHeight; h++)
-            {
-                for (int w = 0; w < mapWidth; w++)
-                {
-                    mapGrid[w, h] = (int) (Mathf.PerlinNoise(w / 10f + seed, h / 10f + seed) * 10);
-                }
-            }
+        private Lot[,] GenerateGrid(float seed)
+        {
+            Lot[,] grid = new Lot[mapWidth, mapHeight];
 
             // build streets
             int x = 0;
@@ -48,7 +47,7 @@ namespace CityGenerator
             {
                 for (int h = 0; h < mapHeight; h++)
                 {
-                    mapGrid[x, h] = -1;
+                    grid[x, h] = new Lot(true, new Vector2(x, h), -1);
                 }
                 x += Random.Range(2, 15);
                 if (x >= mapWidth) break;
@@ -59,50 +58,138 @@ namespace CityGenerator
             {
                 for (int w = 0; w < mapWidth; w++)
                 {
-                    if (mapGrid[w, z] == -1)
-                        mapGrid[w, z] = -3;
+                    if (grid[w, z] != null && grid[w, z].street)
+                        grid[w, z].lotType = -3;
                     else
-                        mapGrid[w, z] = -2;
+                        grid[w, z] = new Lot(true, new Vector2(w, z), -2);
                 }
-                z += Random.Range(5, 20);
+                z += Random.Range(2, 20);
                 if (z >= mapHeight) break;
             }
 
-            // build city
+            // add buildings
             for (int h = 0; h < mapHeight; h++)
             {
                 for (int w = 0; w < mapWidth; w++)
                 {
-                    int result = mapGrid[w, h];
-                    Vector3 pos = new Vector3(w * buildingFootprint, 0, h * buildingFootprint);
+                    if (grid[w, h] == null || !grid[w, h].street)
+                    {
+                        float perlin = Mathf.PerlinNoise(w / 10f + seed, h / 10f + seed) * 10;
+                        grid[w, h] = new Lot(false, new Vector2(w, h),
+                            perlin);
+                    }
+                    grid[w,h].worldPos = new Vector3(w * buildingFootprint, 0, h * buildingFootprint);
+                }
+            }
+
+            return grid;
+        }
+
+        private void InstantiateGridElements(Lot[,] lots)
+        {
+            container = new GameObject("CityContainer");
+            container.transform.position = Vector3.zero;
+            for (int x = 0; x < lots.GetLength(0); x++)
+            {
+                for (int z = 0; z < lots.GetLength(1); z++)
+                {
+                    Lot lot = lots[x, z];
+                    float result = lot.lotType;
+                    GameObject lotGO;
                     if (result < -2)
-                        Instantiate(crossRoad, pos, crossRoad.transform.rotation);
+                        lotGO = Instantiate(crossRoad, lot.worldPos, crossRoad.transform.rotation);
                     else if (result < -1)
-                        Instantiate(xStreets, pos, xStreets.transform.rotation);
+                        lotGO = Instantiate(xStreets, lot.worldPos, xStreets.transform.rotation);
                     else if (result < 0)
-                        Instantiate(zStreets, pos, zStreets.transform.rotation);
+                        lotGO = Instantiate(zStreets, lot.worldPos, zStreets.transform.rotation);
                     else
-                        Instantiate(GetNoiseGO(result), pos, Quaternion.identity);
+                        lotGO = Instantiate(GetElementFromNoise(result), lot.worldPos, Quaternion.identity);
+                    lotGO.transform.SetParent(container.transform);
                 }
             }
         }
 
-        private GameObject GetNoiseGO(float result)
+        private void CalculateCityLots(Lot[,] lots)
         {
-            if (result < 2)
-                return buildings[0];
-            else if (result < 4)
-                return buildings[1];
-            else if (result < 5)
-                return buildings[2];
-            else if (result < 8)
-                return buildings[3];
-            else if (result < 7)
-                return buildings[4];
-            else
-                return buildings[5];
+            for (int x = 0; x < lots.GetLength(0); x++)
+            {
+                for (int z = 0; z < lots.GetLength(1); z++)
+                {
+                    Lot lot = lots[x, z];
+                    if (!lot.street && lot.neighrboor == null)
+                        GenerateApple(lots, x, z);
+                }
+            }
+        }
 
-            // https://youtu.be/xkuniXI3SEE?t=14m2s
+        private List<Lot> GetApple(Lot lot, List<Lot> apple)
+        {
+            if (lot == null || lot.street) return apple;
+            apple.Add(lot);
+            GetApple(lot.neighrboor, apple);
+            return apple;
+        }
+
+        private void GenerateApple(Lot[,] lots, int x, int z)
+        {
+            Lot thisLot = lots[x, z];
+            if (x + 1 < lots.GetLength(0))
+            {
+                Lot xNeighboor = lots[x + 1, z];
+                if (!xNeighboor.street && xNeighboor.neighrboor == null)
+                {
+                    xNeighboor.neighrboor = thisLot;
+                    GenerateApple(lots, x + 1, z);
+                }
+            }
+            if (z + 1 < lots.GetLength(1))
+            {
+                Lot zNeighboor = lots[x, z + 1];
+                if (!zNeighboor.street && zNeighboor.neighrboor == null)
+                {
+                    zNeighboor.neighrboor = thisLot;
+                    GenerateApple(lots, x, z + 1);
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                Destroy(container);
+                container = null;
+                System.GC.Collect();
+                GenerateMap();
+            }
+            else if (Input.GetKey(KeyCode.M))
+            {
+                for (int x = 0; x < map.GetLength(0); x++)
+                {
+                    for (int z = 0; z < map.GetLength(1); z++)
+                    {
+                        Lot lot = map[x, z];
+                        if (lot.neighrboor != null)
+                        {
+                            Vector3 thisPos = new Vector3(lot.gridPos.x * buildingFootprint, 0,
+                                lot.gridPos.y * buildingFootprint);
+                            Vector3 neighboorPos = new Vector3(lot.neighrboor.gridPos.x * buildingFootprint, 0,
+                                lot.neighrboor.gridPos.y * buildingFootprint);
+                            Debug.DrawLine(thisPos, neighboorPos);
+                        }
+                    }
+                }
+            }
+            if(Input.GetKeyDown(KeyCode.A))
+                container.SetActive(!container.activeSelf);
+        }
+
+        private GameObject GetElementFromNoise(float result)
+        {
+            float rule3 = ((buildings.Length - 1) / 10f) * result;
+
+            int currentIndex = Mathf.RoundToInt(rule3);
+            return buildings[currentIndex];
         }
     }
 }
