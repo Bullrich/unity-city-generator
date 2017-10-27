@@ -20,7 +20,8 @@ namespace CityGenerator
         private Vector3 worldSize;
 
         public static int buildingFootprint {get { return 3; }}
-        [SerializeField] private Neighborhood[] _neighborhoods;
+        //[SerializeField] private Neighborhood[] _neighborhoods;
+        public Neighborhood[] neighborhoods;
 
         private GameObject container;
 
@@ -197,6 +198,28 @@ namespace CityGenerator
                 container.SetActive(!container.activeSelf);
         }
 
+        /*
+         * 26/10/17: Por si nos sirve para el input.
+         * 
+        public void Input_Generate()
+        {
+            Destroy(container);
+            container = null;
+            GC.Collect();
+            GenerateMap();
+        }
+
+        public void Input_Draw()
+        {
+            DrawNeighboor();
+        }
+
+        public void Input_SetActive()
+        {
+            container.SetActive(!container.activeSelf);
+        }
+        */
+
         private void DrawNeighboor()
         {
             for (int x = 0; x < map.GetLength(0); x++)
@@ -220,10 +243,12 @@ namespace CityGenerator
 
         private Neighborhood GetNeighborhoodFromNoise(float result)
         {
-            float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
+            //float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
+            float rule3 = ((neighborhoods.Length - 1) / 10f) * result;
 
             int currentIndex = Mathf.RoundToInt(rule3);
-            return _neighborhoods[currentIndex];
+            //return _neighborhoods[currentIndex];
+            return neighborhoods[currentIndex];
         }
     }
 }
