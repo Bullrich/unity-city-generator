@@ -17,6 +17,9 @@ namespace CityGenerator
             mapWidth = 20,
             mapHeight = 20;
 
+        public int seed = 0;
+        public bool randomSeed;
+
         private Vector3 worldSize;
 
         public static int buildingFootprint {get { return 3; }}
@@ -49,7 +52,12 @@ namespace CityGenerator
 
         private void GenerateMap()
         {
-            map = GenerateGrid(Random.Range(0, 50));
+            // we set the seed
+            if (randomSeed)
+                seed = Random.Range(0, 400);
+            Random.InitState(seed);
+            
+            map = GenerateGrid();
 
             // this should be done automaticaly by the Apple "build" command
             InstantiateGridElements(map);
@@ -59,9 +67,11 @@ namespace CityGenerator
             }
 
             CalculateCityLots(map);
+            // we restore true randomess
+            Random.InitState(System.Environment.TickCount);
         }
 
-        private ILot[,] GenerateGrid(float seed)
+        private ILot[,] GenerateGrid()
         {
             ILot[,] grid = new ILot[mapWidth, mapHeight];
 
@@ -92,13 +102,15 @@ namespace CityGenerator
             }
 
             // add buildings
+            float perlinSeed = Random.Range(0f, 40f);
+            
             for (int h = 0; h < mapHeight; h++)
             {
                 for (int w = 0; w < mapWidth; w++)
                 {
                     if (grid[w, h] == null || grid[w, h].lotType != LotType.Street)
                     {
-                        float perlin = Mathf.PerlinNoise(w / 10f + seed, h / 10f + seed) * 10;
+                        float perlin = Mathf.PerlinNoise(w / 10f + perlinSeed, h / 10f + perlinSeed) * 10;
                         grid[w, h] = new Lot(new Vector2(w, h), GetNeighborhoodFromNoise(perlin));
                     }
                     grid[w, h].worldPos = new Vector3(w * buildingFootprint, 0, h * buildingFootprint);
