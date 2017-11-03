@@ -201,18 +201,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efdcc916c15074f499d93a286474e9e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildings:
-  - {fileID: 141268, guid: b3d3a7ba5f4d42943920370ae1696723, type: 2}
-  - {fileID: 147108, guid: 3d01ef65dd7df27469c08a5faaf917bd, type: 2}
-  - {fileID: 151704, guid: 43cefcf568e58d84d802bbb3c6a74777, type: 2}
-  - {fileID: 189348, guid: d597a8fa6b192c545bbae896e4d42a21, type: 2}
-  - {fileID: 117616, guid: b2fcb4869e568194ebff11fc13530282, type: 2}
-  - {fileID: 1754488902340108, guid: 5e3fbdc1740a86e43a0693f5b46687b1, type: 2}
   xStreets: {fileID: 1477758458555386, guid: f57a3a5ec0efd1d4abc5449be84fd5d0, type: 2}
   zStreets: {fileID: 1275999793250588, guid: be68cb4a9ac64ce48b165f5350d8963d, type: 2}
   crossRoad: {fileID: 1916371864499812, guid: 58ba92cefb11e52489b1582fdddefa70, type: 2}
   mapWidth: 20
   mapHeight: 20
+  _neighborhoods:
+  - buildings:
+    - {fileID: 100000, guid: d589a6789773d0840b0733e82c7d3e2e, type: 3}
+    ChanceToAppear: 25
+  - buildings:
+    - {fileID: 100000, guid: 51dd5bf4be5fbb84e9f6e823c6b2fbc9, type: 3}
+    ChanceToAppear: 25
+  - buildings:
+    - {fileID: 100000, guid: 3a6923a1482b2e84599c596ff5d74c1b, type: 3}
+    ChanceToAppear: 25
+  - buildings:
+    - {fileID: 100000, guid: ecde5defbf8dfb34fb9fe3562bb81ce8, type: 3}
+    ChanceToAppear: 25
 --- !u!4 &1116170646
 Transform:
   m_ObjectHideFlags: 0

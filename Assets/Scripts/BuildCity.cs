@@ -32,6 +32,7 @@ namespace CityGenerator
         {
             worldSize = WorldSize();
             GenerateMap();
+            
         }
 
 //        private void OnDrawGizmosSelected()
@@ -51,13 +52,36 @@ namespace CityGenerator
             map = GenerateGrid(Random.Range(0, 50));
 
             // this should be done automaticaly by the Apple "build" command
-            InstantiateGridElements(map);
-            foreach (Apple apple in apples)
-            {
-                apple.BuildApple().transform.SetParent(container.transform);
-            }
+            //InstantiateGridElements(map); //pone las cosas en la ciudad
+            CalculateCityLots(map);  //este es el que genera la magía
 
-            CalculateCityLots(map);
+            
+            List<Lot> manzanas = new List<Lot>();
+
+
+            List<Lot> apple = new List<Lot>();
+            for (int x = 0; x < map.GetLength(0); x++)
+            {
+                for (int z = 0; z < map.GetLength(1); z++)
+                {
+                    if (map[x, z].lotType == LotType.Lot)
+                    {
+                        Lot lot = (Lot)map[x, z];
+                        if (lot.neighboor == null)
+                        {
+                            GenerateApple(map, x, z, apple);
+                            Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
+                            newApple.BuildApple();  
+                            apple.Clear();
+                        }
+                    }
+                }
+            }
+            
+
+            
+
+            //CalculateCityLots(map);  //este es el que genera la magía
         }
 
         private ILot[,] GenerateGrid(float seed)
