@@ -78,10 +78,10 @@ public class CityBuilderCustomEditor : Editor
     {
         EditorGUILayout.LabelField("Set city size:", EditorStyles.boldLabel);
         EditorGUILayout.BeginHorizontal();
-        _target.mapWidth = EditorGUILayout.IntField("Width", _target.mapWidth, GUILayout.Width(Screen.width / 2f));
-        _target.mapHeight = EditorGUILayout.IntField("Height", _target.mapHeight, GUILayout.Width(Screen.width / 2f));
+        _target.mapWidth = EditorGUILayout.IntField("Width", _target.mapWidth);
+        _target.mapHeight = EditorGUILayout.IntField("Height", _target.mapHeight);
         EditorGUILayout.EndHorizontal();
-        if (_target.mapWidth < 0) EditorGUILayout.HelpBox("Map Width must be a positive value.", MessageType.Error);
+		if (_target.mapWidth < 0) EditorGUILayout.HelpBox("Map Width must be a positive value.", MessageType.Error);
         else if (_target.mapWidth == 0) EditorGUILayout.HelpBox("Map Width must not be zero. A city of width 0 is literally nothing, don't get metaphysical with me!", MessageType.Error);
 
         if (_target.mapHeight < 0) EditorGUILayout.HelpBox("Map Height must be a positive value.", MessageType.Error);
@@ -102,13 +102,21 @@ public class CityBuilderCustomEditor : Editor
                 _target.neighborhoods[i].buildings[j] = (GameObject)EditorGUILayout.ObjectField("Building #" + (i + 1), _target.neighborhoods[i].buildings[j], typeof(GameObject), false);
             }
             if (_target.neighborhoods[i].buildings.Length == 0) EditorGUILayout.HelpBox("No buildings in this Neighborhood!", MessageType.Error);
-            /*
+			if (GUILayout.Button ("Add Building"))
+			{
+				_target.neighborhoods [i].buildings [_target.neighborhoods [i].buildings.Length] = new GameObject ();
+			}
+			/*
             Rect bBtn = EditorGUILayout.BeginHorizontal("Add Building");
             if (GUI.Button(bBtn, GUIContent.none)) _target.neighborhoods[i].buildings[_target.neighborhoods[i].buildings.Length] = new GameObject();
             EditorGUILayout.EndHorizontal();
             */
             EditorGUILayout.Space();
         }
+		if (GUILayout.Button ("Add Neighborhood"))
+		{
+			_target.neighborhoods [_target.neighborhoods.Length] = new CityGenerator.Neighborhood ();
+		}
         /*
         Rect nBtn = EditorGUILayout.BeginHorizontal("Add Neighbor");
         if (GUI.Button(nBtn, GUIContent.none)) _target.neighborhoods[_target.neighborhoods.Length] = new CityGenerator.Neighborhood();

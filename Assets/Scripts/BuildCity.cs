@@ -243,12 +243,14 @@ namespace CityGenerator
 
         private Neighborhood GetNeighborhoodFromNoise(float result)
         {
-            //float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
-            float rule3 = ((neighborhoods.Length - 1) / 10f) * result;
+			if (neighborhoods.Length > 0) {
+				//float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
+				float rule3 = ((neighborhoods.Length - 1) / 10f) * result;
 
-            int currentIndex = Mathf.RoundToInt(rule3);
-            //return _neighborhoods[currentIndex];
-            return neighborhoods[currentIndex];
+				int currentIndex = Mathf.RoundToInt (rule3);
+				//return _neighborhoods[currentIndex];
+				return neighborhoods [currentIndex];
+			} else return new Neighborhood ();
         }
     }
 }
