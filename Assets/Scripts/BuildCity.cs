@@ -39,6 +39,7 @@ namespace CityGenerator
         {
             worldSize = WorldSize();
             GenerateMap();
+            
         }
 
         private Vector3 WorldSize()
@@ -61,7 +62,20 @@ namespace CityGenerator
             //InstantiateGridElements(map);
             foreach (Apple apple in apples)
             {
-                apple.BuildApple().transform.SetParent(container.transform);
+                for (int z = 0; z < map.GetLength(1); z++)
+                {
+                    if (map[x, z].lotType == LotType.Lot)
+                    {
+                        Lot lot = (Lot)map[x, z];
+                        if (lot.neighboor == null)
+                        {
+                            GenerateApple(map, x, z, apple);
+                            Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
+                            newApple.BuildApple();  
+                            apple.Clear();
+                        }
+                    }
+                }
             }
             InstantiateStreets(map);
             // we restore true randomess

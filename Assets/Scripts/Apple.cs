@@ -7,9 +7,23 @@ namespace CityGenerator
         public Vector2 size { get; private set; }
         public Lot[] appleLots { get; private set; }
 
+        //game object que voy a devolver, este va a contener a sus amados hijos
+        private GameObject _objPadre = null;
+
+        private static int _nPadre = 0; //para ir contando la cantidad de padres que genero
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gridSize">tama de la manzana</param>
+        /// <param name="_appleLots">todos los lots que hay en la manzada </param>
         public Apple(Vector2 gridSize, Lot[] _appleLots)
         {
             size = gridSize;
+            appleLots = _appleLots;
+        }
+
+        public Apple(Lot[] _appleLots)
+        {
             appleLots = _appleLots;
         }
 
