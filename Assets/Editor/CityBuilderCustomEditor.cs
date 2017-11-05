@@ -4,7 +4,7 @@ using UnityEngine;
 namespace CityGenerator
 {
 //Autor: Iván Ramos
-//[CustomEditor(typeof(CityGenerator.BuildCity))]
+[CustomEditor(typeof(CityGenerator.BuildCity))]
     public class CityBuilderCustomEditor : Editor
     {
         BuildCity _target;
@@ -16,7 +16,7 @@ namespace CityGenerator
 
         private void OnEnable()
         {
-            //_target = (CityGenerator.BuildCity)target;
+            _target = (CityGenerator.BuildCity)target;
         }
 
         public override void OnInspectorGUI()
