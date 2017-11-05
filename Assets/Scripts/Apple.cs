@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace CityGenerator
 {
@@ -13,14 +11,20 @@ namespace CityGenerator
         {
             size = gridSize;
             appleLots = _appleLots;
-            Debug.Log(size);
-            Debug.Log(new Vector3(size.x * BuildCity.buildingFootprint, 0, size.y * BuildCity.buildingFootprint));
         }
 
         public GameObject BuildApple()
         {
-            // generate apple based in the size and store all the apple under a gameobject. Then return such gameobject
-            return null;
+            // esto ahora anda
+            GameObject container = new GameObject(string.Format("Apple {0}/{1}", size.x, size.y));
+            container.transform.position = Vector3.zero;
+            foreach (Lot lot in appleLots)
+            {
+                GameObject lotGo = MonoBehaviour.Instantiate(lot.buildings[Random.Range(0, lot.buildings.Length - 1)],
+                    lot.worldPos, Quaternion.identity);
+                lotGo.transform.SetParent(container.transform);
+            }
+            return container;
         }
     }
 }
