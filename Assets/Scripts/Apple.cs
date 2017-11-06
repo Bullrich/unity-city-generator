@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace CityGenerator
 {
@@ -9,18 +7,38 @@ namespace CityGenerator
         public Vector2 size { get; private set; }
         public Lot[] appleLots { get; private set; }
 
+        //game object que voy a devolver, este va a contener a sus amados hijos
+        private GameObject _objPadre = null;
+
+        private static int _nPadre = 0; //para ir contando la cantidad de padres que genero
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gridSize">tama de la manzana</param>
+        /// <param name="_appleLots">todos los lots que hay en la manzada </param>
         public Apple(Vector2 gridSize, Lot[] _appleLots)
         {
             size = gridSize;
             appleLots = _appleLots;
-            Debug.Log(size);
-            Debug.Log(new Vector3(size.x * BuildCity.buildingFootprint, 0, size.y * BuildCity.buildingFootprint));
+        }
+
+        public Apple(Lot[] _appleLots)
+        {
+            appleLots = _appleLots;
         }
 
         public GameObject BuildApple()
         {
-            // generate apple based in the size and store all the apple under a gameobject. Then return such gameobject
-            return null;
+            // esto ahora anda
+            GameObject container = new GameObject(string.Format("Apple {0}/{1}", size.x, size.y));
+            container.transform.position = Vector3.zero;
+            foreach (Lot lot in appleLots)
+            {
+                GameObject lotGo = MonoBehaviour.Instantiate(lot.buildings[Random.Range(0, lot.buildings.Length - 1)],
+                    lot.worldPos, Quaternion.identity);
+                lotGo.transform.SetParent(container.transform);
+            }
+            return container;
         }
     }
 }

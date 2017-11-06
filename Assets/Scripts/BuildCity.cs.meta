@@ -1,10 +1,14 @@
 fileFormatVersion: 2
 guid: efdcc916c15074f499d93a286474e9e3
-timeCreated: 1508277103
+timeCreated: 1508713432
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - xStreets: {fileID: 1477758458555386, guid: f57a3a5ec0efd1d4abc5449be84fd5d0, type: 2}
+  - zStreets: {fileID: 1275999793250588, guid: be68cb4a9ac64ce48b165f5350d8963d, type: 2}
+  - crossRoad: {fileID: 1916371864499812, guid: 58ba92cefb11e52489b1582fdddefa70,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
