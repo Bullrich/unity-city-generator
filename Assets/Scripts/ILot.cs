@@ -45,7 +45,7 @@ namespace CityGenerator
         public enum streetType
         {
             xStreet,
-            zStreert,
+            zStreet,
             Crossroad
         }
 
@@ -64,7 +64,7 @@ namespace CityGenerator
         Lot
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Neighborhood
     {
         public GameObject[] buildings;

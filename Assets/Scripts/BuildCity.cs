@@ -17,10 +17,17 @@ namespace CityGenerator
             mapWidth = 20,
             mapHeight = 20;
 
+        public int seed = 0;
+        public bool randomSeed;
+
         private Vector3 worldSize;
 
-        public static int buildingFootprint {get { return 3; }}
-        [SerializeField] private Neighborhood[] _neighborhoods;
+        public static int buildingFootprint
+        {
+            get { return 3; }
+        }
+
+        public Neighborhood[] neighborhoods;
 
         private GameObject container;
 
@@ -32,14 +39,8 @@ namespace CityGenerator
         {
             worldSize = WorldSize();
             GenerateMap();
+            
         }
-
-//        private void OnDrawGizmosSelected()
-//        {
-////            Vector3 size = WorldSize();
-////            Gizmos.DrawWireCube(Vector3.zero, size);
-//            
-//        }
 
         private Vector3 WorldSize()
         {
@@ -48,19 +49,40 @@ namespace CityGenerator
 
         private void GenerateMap()
         {
-            map = GenerateGrid(Random.Range(0, 50));
+            container = new GameObject("CityContainer");
+            // we set the seed
+            if (randomSeed)
+                seed = Random.Range(0, 400);
+            Random.InitState(seed);
 
-            // this should be done automaticaly by the Apple "build" command
-            InstantiateGridElements(map);
-            foreach (Apple apple in apples)
-            {
-                apple.BuildApple().transform.SetParent(container.transform);
-            }
+            map = GenerateGrid();
 
             CalculateCityLots(map);
+            // this should be done automaticaly by the Apple "build" command
+            //InstantiateGridElements(map);
+            foreach (Apple apple in apples)
+            {
+                for (int z = 0; z < map.GetLength(1); z++)
+                {
+                    if (map[x, z].lotType == LotType.Lot)
+                    {
+                        Lot lot = (Lot)map[x, z];
+                        if (lot.neighboor == null)
+                        {
+                            GenerateApple(map, x, z, apple);
+                            Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
+                            newApple.BuildApple();  
+                            apple.Clear();
+                        }
+                    }
+                }
+            }
+            InstantiateStreets(map);
+            // we restore true randomess
+            Random.InitState(System.Environment.TickCount);
         }
 
-        private ILot[,] GenerateGrid(float seed)
+        private ILot[,] GenerateGrid()
         {
             ILot[,] grid = new ILot[mapWidth, mapHeight];
 
@@ -91,13 +113,15 @@ namespace CityGenerator
             }
 
             // add buildings
+            float perlinSeed = Random.Range(0f, 40f);
+
             for (int h = 0; h < mapHeight; h++)
             {
                 for (int w = 0; w < mapWidth; w++)
                 {
                     if (grid[w, h] == null || grid[w, h].lotType != LotType.Street)
                     {
-                        float perlin = Mathf.PerlinNoise(w / 10f + seed, h / 10f + seed) * 10;
+                        float perlin = Mathf.PerlinNoise(w / 10f + perlinSeed, h / 10f + perlinSeed) * 10;
                         grid[w, h] = new Lot(new Vector2(w, h), GetNeighborhoodFromNoise(perlin));
                     }
                     grid[w, h].worldPos = new Vector3(w * buildingFootprint, 0, h * buildingFootprint);
@@ -109,7 +133,6 @@ namespace CityGenerator
 
         private void InstantiateGridElements(ILot[,] lots)
         {
-            container = new GameObject("CityContainer");
             container.transform.position = Vector3.zero;
             for (int x = 0; x < lots.GetLength(0); x++)
             {
@@ -123,6 +146,20 @@ namespace CityGenerator
                         lotGo = Instantiate(lot.buildings[Random.Range(0, lot.buildings.Length - 1)],
                             lot.worldPos, Quaternion.identity);
                     lotGo.transform.SetParent(container.transform);
+                }
+            }
+        }
+
+        private void InstantiateStreets(ILot[,] lots)
+        {
+            for (int i = 0; i < lots.GetLength(0); i++)
+            {
+                for (int j = 0; j < lots.GetLength(1); j++)
+                {
+                    GameObject street =
+                        Instantiate(lots[i, j].buildings[0], lots[i, j].worldPos,
+                            lots[i, j].buildings[0].transform.rotation);
+                    street.transform.SetParent(container.transform);
                 }
             }
         }
@@ -141,6 +178,7 @@ namespace CityGenerator
                         {
                             GenerateApple(lots, x, z, apple);
                             Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
+                            apples.Add(newApple);
                             apple.Clear();
                         }
                     }
@@ -186,6 +224,7 @@ namespace CityGenerator
             {
                 Destroy(container);
                 container = null;
+                apples.Clear();
                 GC.Collect();
                 GenerateMap();
             }
@@ -196,6 +235,28 @@ namespace CityGenerator
             if (Input.GetKeyDown(KeyCode.A))
                 container.SetActive(!container.activeSelf);
         }
+
+        /*
+         * 26/10/17: Por si nos sirve para el input.
+         * 
+        public void Input_Generate()
+        {
+            Destroy(container);
+            container = null;
+            GC.Collect();
+            GenerateMap();
+        }
+
+        public void Input_Draw()
+        {
+            DrawNeighboor();
+        }
+
+        public void Input_SetActive()
+        {
+            container.SetActive(!container.activeSelf);
+        }
+        */
 
         private void DrawNeighboor()
         {
@@ -220,10 +281,16 @@ namespace CityGenerator
 
         private Neighborhood GetNeighborhoodFromNoise(float result)
         {
-            float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
+            if (neighborhoods.Length > 0)
+            {
+                //float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
+                float rule3 = ((neighborhoods.Length - 1) / 10f) * result;
 
-            int currentIndex = Mathf.RoundToInt(rule3);
-            return _neighborhoods[currentIndex];
+                int currentIndex = Mathf.RoundToInt(rule3);
+                //return _neighborhoods[currentIndex];
+                return neighborhoods[currentIndex];
+            }
+            else return new Neighborhood();
         }
     }
 }
