@@ -52,12 +52,20 @@ namespace CityGenerator
 
             // this should be done automaticaly by the Apple "build" command
             InstantiateGridElements(map);
+
+            //<Jc> cambie de lugar esto para que meta todo en las manzanas una vez hecha la grilla
+            //foreach (Apple apple in apples)
+            //{
+            //    apple.BuildApple().transform.SetParent(container.transform);
+            //}
+
+            CalculateCityLots(map);
+
             foreach (Apple apple in apples)
             {
                 apple.BuildApple().transform.SetParent(container.transform);
             }
 
-            CalculateCityLots(map);
         }
 
         private ILot[,] GenerateGrid(float seed)
@@ -141,6 +149,7 @@ namespace CityGenerator
                         {
                             GenerateApple(lots, x, z, apple);
                             Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
+                            apples.Add(newApple); //<Jc> agrego a la lista de manzanas
                             apple.Clear();
                         }
                     }
