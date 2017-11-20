@@ -295,14 +295,24 @@ namespace CityGenerator
         {
             if (neighborhoods.Length > 0)
             {
-                //float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
-                float rule3 = ((neighborhoods.Length - 1) / 10f) * result;
+                int totalChance = 0;
+                foreach (Neighborhood ng in neighborhoods)
+                {
+                    totalChance += ng.ChanceToAppear;
+                }
+                // Usamos regla de tres simple con ruleta no se que cosa para permitir que se decida las chances 
+                // de que aparezca algo en base al porcentaje que el usuario le dio.
+                float newChance = (totalChance / 10f) * result;
+                int currentChances = 0;
+                for (int i = 0; i < neighborhoods.Length; i++)
+                {
+                    currentChances += neighborhoods[i].ChanceToAppear;
 
-                int currentIndex = Mathf.RoundToInt(rule3);
-                //return _neighborhoods[currentIndex];
-                return neighborhoods[currentIndex];
+                    if (currentChances > newChance)
+                        return neighborhoods[i];
+                }
             }
-            else return new Neighborhood();
+            return new Neighborhood();
         }
     }
 }
