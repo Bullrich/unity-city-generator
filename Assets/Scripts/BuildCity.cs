@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -19,6 +20,7 @@ namespace CityGenerator
 
         public int seed = 0;
         public bool randomSeed;
+        public bool randomStreets;
 
         private Vector3 worldSize;
 
@@ -39,7 +41,6 @@ namespace CityGenerator
         {
             worldSize = WorldSize();
             GenerateMap();
-            
         }
 
         private Vector3 WorldSize()
@@ -58,25 +59,6 @@ namespace CityGenerator
             map = GenerateGrid();
 
             CalculateCityLots(map);
-            // this should be done automaticaly by the Apple "build" command
-            //InstantiateGridElements(map);
-            foreach (Apple apple in apples)
-            {
-                for (int z = 0; z < map.GetLength(1); z++)
-                {
-                    if (map[x, z].lotType == LotType.Lot)
-                    {
-                        Lot lot = (Lot)map[x, z];
-                        if (lot.neighboor == null)
-                        {
-                            GenerateApple(map, x, z, apple);
-                            Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
-                            newApple.BuildApple();  
-                            apple.Clear();
-                        }
-                    }
-                }
-            }
             InstantiateStreets(map);
             // we restore true randomess
             Random.InitState(System.Environment.TickCount);
@@ -112,6 +94,24 @@ namespace CityGenerator
                 if (z >= mapHeight) break;
             }
 
+            // get cross streets
+            if (randomStreets)
+                for (x = 0; x < grid.GetLength(0); x++)
+                {
+                    for (z = 0; z < grid.GetLength(1); z++)
+                    {
+                        if ((grid[x, z] != null && grid[x, z].lotType == LotType.Street) &&
+                            canBuildRandomStreet(grid, x, z) && Random.Range(0, 10) > 8)
+                        {
+                            while ((++z < grid.GetLength(1)) &&
+                                   (grid[x, z] == null || grid[x, z].lotType != LotType.Street))
+                            {
+                                grid[x, z] = new Street(xStreets, new Vector2(x, z));
+                            }
+                        }
+                    }
+                }
+
             // add buildings
             float perlinSeed = Random.Range(0f, 40f);
 
@@ -129,6 +129,20 @@ namespace CityGenerator
             }
 
             return grid;
+        }
+
+        private bool canBuildRandomStreet(ILot[,] grid, int x, int z)
+        {
+            if (x <= 0 || x >= grid.GetLength(0) - 1 ||z <= 0 ||z >= grid.GetLength(1) - 1)
+                return false;
+    
+            ILot[] lots = new ILot[] {grid[x +1, z + 1], grid[x-1, z + 1]};
+            foreach (ILot lot in lots)
+            {
+                if (lot != null && lot.lotType == LotType.Street)
+                    return false;
+            }
+            return true;
         }
 
         private void InstantiateGridElements(ILot[,] lots)
@@ -156,10 +170,13 @@ namespace CityGenerator
             {
                 for (int j = 0; j < lots.GetLength(1); j++)
                 {
-                    GameObject street =
-                        Instantiate(lots[i, j].buildings[0], lots[i, j].worldPos,
-                            lots[i, j].buildings[0].transform.rotation);
-                    street.transform.SetParent(container.transform);
+                    //if (lots[i, j].lotType == LotType.Street)
+                    {
+                        GameObject street =
+                            Instantiate(lots[i, j].buildings[0], lots[i, j].worldPos,
+                                lots[i, j].buildings[0].transform.rotation);
+                        street.transform.SetParent(container.transform);
+                    }
                 }
             }
         }
@@ -283,14 +300,24 @@ namespace CityGenerator
         {
             if (neighborhoods.Length > 0)
             {
-                //float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
-                float rule3 = ((neighborhoods.Length - 1) / 10f) * result;
+                int totalChance = 0;
+                foreach (Neighborhood ng in neighborhoods)
+                {
+                    totalChance += ng.ChanceToAppear;
+                }
+                // Usamos regla de tres simple con ruleta no se que cosa para permitir que se decida las chances 
+                // de que aparezca algo en base al porcentaje que el usuario le dio.
+                float newChance = (totalChance / 10f) * result;
+                int currentChances = 0;
+                for (int i = 0; i < neighborhoods.Length; i++)
+                {
+                    currentChances += neighborhoods[i].ChanceToAppear;
 
-                int currentIndex = Mathf.RoundToInt(rule3);
-                //return _neighborhoods[currentIndex];
-                return neighborhoods[currentIndex];
+                    if (currentChances > newChance)
+                        return neighborhoods[i];
+                }
             }
-            else return new Neighborhood();
+            return new Neighborhood();
         }
     }
 }
