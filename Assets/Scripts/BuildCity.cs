@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -19,6 +20,7 @@ namespace CityGenerator
 
         public int seed = 0;
         public bool randomSeed;
+        public bool randomStreets;
 
         private Vector3 worldSize;
 
@@ -93,29 +95,18 @@ namespace CityGenerator
             }
 
             // get cross streets
-            if (true)
+            if (randomStreets)
                 for (x = 0; x < grid.GetLength(0); x++)
                 {
                     for (z = 0; z < grid.GetLength(1); z++)
                     {
                         if ((grid[x, z] != null && grid[x, z].lotType == LotType.Street) &&
-                            ((z + 1) < grid.GetLength(1)) && Random.Range(0, 10) > 8)
+                            canBuildRandomStreet(grid, x, z) && Random.Range(0, 10) > 8)
                         {
-//                        z++;
-//                        Debug.Log("In");
-//                        if ((z + 1) < grid.GetLength(1))
-//                            Debug.Log("1");
-//                        if (grid[x, z] == null || grid[x, z].lotType != LotType.Street)
-//                            Debug.Log(2);
-                            Debug.Log("1 " + ((z + 1) < grid.GetLength(1)));
-                            Debug.Log("2 " + (grid[x, z + 1] == null || grid[x, z + 1].lotType != LotType.Street));
-                            z++;
-                            while (((z + 1) < grid.GetLength(1)) &&
+                            while ((++z < grid.GetLength(1)) &&
                                    (grid[x, z] == null || grid[x, z].lotType != LotType.Street))
                             {
-                                Debug.Log(z);
                                 grid[x, z] = new Street(xStreets, new Vector2(x, z));
-                                z++;
                             }
                         }
                     }
@@ -138,6 +129,20 @@ namespace CityGenerator
             }
 
             return grid;
+        }
+
+        private bool canBuildRandomStreet(ILot[,] grid, int x, int z)
+        {
+            if (x <= 0 || x >= grid.GetLength(0) - 1 ||z <= 0 ||z >= grid.GetLength(1) - 1)
+                return false;
+    
+            ILot[] lots = new ILot[] {grid[x +1, z + 1], grid[x-1, z + 1]};
+            foreach (ILot lot in lots)
+            {
+                if (lot != null && lot.lotType == LotType.Street)
+                    return false;
+            }
+            return true;
         }
 
         private void InstantiateGridElements(ILot[,] lots)
@@ -165,7 +170,7 @@ namespace CityGenerator
             {
                 for (int j = 0; j < lots.GetLength(1); j++)
                 {
-                    if (lots[i, j].lotType == LotType.Street)
+                    //if (lots[i, j].lotType == LotType.Street)
                     {
                         GameObject street =
                             Instantiate(lots[i, j].buildings[0], lots[i, j].worldPos,
