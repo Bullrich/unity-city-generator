@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace CityGenerator
 {
@@ -13,6 +11,16 @@ namespace CityGenerator
         private GameObject _objPadre = null;
 
         private static int _nPadre = 0; //para ir contando la cantidad de padres que genero
+
+        public GameObject manzana
+        {
+            get
+            {
+                return _objPadre;
+            }
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -22,10 +30,6 @@ namespace CityGenerator
         {
             size = gridSize;
             appleLots = _appleLots;
-            Debug.ClearDeveloperConsole();
-            Debug.Log("Valor size:" + size);
-            Debug.Log("Distancia: " + new Vector3(size.x * BuildCity.buildingFootprint, 0, size.y * BuildCity.buildingFootprint));
-            Debug.Log(string.Format("Apple {0}", appleLots.Length));
         }
 
         public Apple(Lot[] _appleLots)
@@ -35,9 +39,26 @@ namespace CityGenerator
 
         public GameObject BuildApple()
         {
-            try
+            #region código javier
+            // esto ahora anda
+            /*
+            GameObject container = new GameObject(string.Format("Apple {0}/{1}", size.x, size.y));
+            container.transform.position = Vector3.zero;
+            foreach (Lot lot in appleLots)
             {
-                _objPadre = new GameObject("Parent_" + _nPadre);
+                GameObject lotGo = MonoBehaviour.Instantiate(lot.buildings[Random.Range(0, lot.buildings.Length - 1)],
+                    lot.worldPos, Quaternion.identity);
+                lotGo.transform.SetParent(container.transform);
+            }
+            return container;
+            */
+            #endregion
+            
+
+            
+             try
+            {
+                _objPadre = new GameObject("Parent_" + _nPadre + " " + string.Format("Apple {0}/{1}", size.x, size.y));
                 _nPadre++;
                 Debug.Log(appleLots.Length);
 
@@ -48,20 +69,21 @@ namespace CityGenerator
                     {
                         _objPadre.transform.position = appleLots[I].worldPos;
                     }
-                    GameObject auxObj = UnityEngine.GameObject.Instantiate(appleLots[I].buildings[Random.Range(0, appleLots[I].buildings.Length)],
+                    GameObject auxObj = UnityEngine.GameObject.Instantiate(appleLots[I].buildings[Random.Range(0, appleLots[I].buildings.Length -1)],
                           appleLots[I].worldPos, Quaternion.identity); //le pongo el cubo de la grilla en el gameobject auxiliar
                     auxObj.transform.SetParent(_objPadre.transform);
                 }
 
-                // generate apple based in the size and store all the apple under a gameobject. Then return such gameobject
-                //return null;
                 return _objPadre;
+
             }
             catch(System.Exception Err)
             {
                 Debug.Log(Err.Message);
                 return null;
             }
+            
+
         }
     }
 }
