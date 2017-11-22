@@ -32,6 +32,7 @@ namespace CityGenerator
         {
             worldSize = WorldSize();
             GenerateMap();
+            
         }
 
 //        private void OnDrawGizmosSelected()
@@ -48,24 +49,41 @@ namespace CityGenerator
 
         private void GenerateMap()
         {
+            const int C_DIV = 4;
+
             map = GenerateGrid(Random.Range(0, 50));
 
             // this should be done automaticaly by the Apple "build" command
-            InstantiateGridElements(map);
+            //InstantiateGridElements(map); //pone las cosas en la ciudad
+            CalculateCityLots(map);  //este es el que genera la magía
 
-            //<Jc> cambie de lugar esto para que meta todo en las manzanas una vez hecha la grilla
-            //foreach (Apple apple in apples)
-            //{
-            //    apple.BuildApple().transform.SetParent(container.transform);
-            //}
+            
+            List<Lot> manzanas = new List<Lot>();
 
-            CalculateCityLots(map);
 
-            foreach (Apple apple in apples)
+            List<Lot> apple = new List<Lot>();
+            for (int x = 0; x < map.GetLength(0); x++)
             {
-                apple.BuildApple().transform.SetParent(container.transform);
+                for (int z = 0; z < map.GetLength(1); z++)
+                {
+                    if (map[x, z].lotType == LotType.Lot)
+                    {
+                        Lot lot = (Lot)map[x, z];
+                        if (lot.neighboor == null)
+                        {
+                            GenerateApple(map, x, z, apple);
+                            Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
+                            newApple.BuildApple();  
+                            apple.Clear();
+                        }
+                    }
+                }
             }
+            
 
+            
+
+            //CalculateCityLots(map);  //este es el que genera la magía
         }
 
         private ILot[,] GenerateGrid(float seed)
@@ -149,7 +167,6 @@ namespace CityGenerator
                         {
                             GenerateApple(lots, x, z, apple);
                             Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
-                            apples.Add(newApple); //<Jc> agrego a la lista de manzanas
                             apple.Clear();
                         }
                     }
