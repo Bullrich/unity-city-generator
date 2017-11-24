@@ -29,7 +29,7 @@ namespace CityGenerator
             get { return 3; }
         }
 
-        public Neighborhood[] neighborhoods;
+        public List<Neighborhood> neighborhoods;
 
         private GameObject container;
 
@@ -157,7 +157,7 @@ namespace CityGenerator
                     if (lot.lotType == LotType.Street)
                         lotGo = Instantiate(lot.buildings[0], lot.worldPos, lot.buildings[0].transform.rotation);
                     else
-                        lotGo = Instantiate(lot.buildings[Random.Range(0, lot.buildings.Length - 1)],
+                        lotGo = Instantiate(lot.buildings[Random.Range(0, lot.buildings.Count - 1)],
                             lot.worldPos, Quaternion.identity);
                     lotGo.transform.SetParent(container.transform);
                 }
@@ -253,28 +253,6 @@ namespace CityGenerator
                 container.SetActive(!container.activeSelf);
         }
 
-        /*
-         * 26/10/17: Por si nos sirve para el input.
-         * 
-        public void Input_Generate()
-        {
-            Destroy(container);
-            container = null;
-            GC.Collect();
-            GenerateMap();
-        }
-
-        public void Input_Draw()
-        {
-            DrawNeighboor();
-        }
-
-        public void Input_SetActive()
-        {
-            container.SetActive(!container.activeSelf);
-        }
-        */
-
         private void DrawNeighboor()
         {
             for (int x = 0; x < map.GetLength(0); x++)
@@ -298,7 +276,7 @@ namespace CityGenerator
 
         private Neighborhood GetNeighborhoodFromNoise(float result)
         {
-            if (neighborhoods.Length > 0)
+            if (neighborhoods.Count > 0)
             {
                 int totalChance = 0;
                 foreach (Neighborhood ng in neighborhoods)
@@ -309,7 +287,7 @@ namespace CityGenerator
                 // de que aparezca algo en base al porcentaje que el usuario le dio.
                 float newChance = (totalChance / 10f) * result;
                 int currentChances = 0;
-                for (int i = 0; i < neighborhoods.Length; i++)
+                for (int i = 0; i < neighborhoods.Count; i++)
                 {
                     currentChances += neighborhoods[i].ChanceToAppear;
 

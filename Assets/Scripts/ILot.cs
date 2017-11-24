@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CityGenerator
@@ -7,7 +8,7 @@ namespace CityGenerator
     {
         Vector2 gridPos { get; }
         Vector3 worldPos { get; set; }
-        GameObject[] buildings { get; }
+        List<GameObject> buildings { get; }
         LotType lotType { get; }
     }
 
@@ -15,7 +16,7 @@ namespace CityGenerator
     {
         public Vector2 gridPos { get; private set; }
         public Vector3 worldPos { get; set; }
-        public GameObject[] buildings { get; private set; }
+        public List<GameObject> buildings { get; private set; }
         public Lot neighboor;
 
         public LotType lotType
@@ -35,7 +36,7 @@ namespace CityGenerator
         public Vector2 gridPos { get; private set; }
         public Vector3 worldPos { get; set; }
 
-        public GameObject[] buildings { get; private set; }
+        public List<GameObject> buildings { get; private set; }
 
         public LotType lotType
         {
@@ -53,7 +54,7 @@ namespace CityGenerator
 
         public Street(GameObject street, Vector2 _gridPos)
         {
-            buildings = new GameObject[1] {street};
+            buildings = new List<GameObject>(1) {street};
             gridPos = _gridPos;
         }
     }
@@ -67,7 +68,7 @@ namespace CityGenerator
     [Serializable]
     public class Neighborhood
     {
-        public GameObject[] buildings;
+        public List<GameObject> buildings = new List<GameObject>();
         [Range(0, 100)] public int ChanceToAppear = 3;
     }
 }
