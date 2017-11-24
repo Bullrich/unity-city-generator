@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -17,10 +18,18 @@ namespace CityGenerator
             mapWidth = 20,
             mapHeight = 20;
 
+        public int seed = 0;
+        public bool randomSeed;
+        public bool randomStreets;
+
         private Vector3 worldSize;
 
-        public static int buildingFootprint {get { return 3; }}
-        [SerializeField] private Neighborhood[] _neighborhoods;
+        public static int buildingFootprint
+        {
+            get { return 3; }
+        }
+
+        public Neighborhood[] neighborhoods;
 
         private GameObject container;
 
@@ -34,13 +43,6 @@ namespace CityGenerator
             GenerateMap();
         }
 
-//        private void OnDrawGizmosSelected()
-//        {
-////            Vector3 size = WorldSize();
-////            Gizmos.DrawWireCube(Vector3.zero, size);
-//            
-//        }
-
         private Vector3 WorldSize()
         {
             return new Vector3((mapWidth * buildingFootprint), 0, (mapHeight * buildingFootprint));
@@ -48,27 +50,27 @@ namespace CityGenerator
 
         private void GenerateMap()
         {
-            map = GenerateGrid(Random.Range(0, 50));
+            container = new GameObject("CityContainer");
+            // we set the seed
+            if (randomSeed)
+                seed = Random.Range(0, 400);
+            Random.InitState(seed);
 
-            // this should be done automaticaly by the Apple "build" command
-            InstantiateGridElements(map);
-
-            //<Jc> cambie de lugar esto para que meta todo en las manzanas una vez hecha la grilla
-            //foreach (Apple apple in apples)
-            //{
-            //    apple.BuildApple().transform.SetParent(container.transform);
-            //}
+            map = GenerateGrid();
 
             CalculateCityLots(map);
+            InstantiateStreets(map);
 
-            foreach (Apple apple in apples)
+            for (int I=0;I<apples.Count; I++)
             {
-                apple.BuildApple().transform.SetParent(container.transform);
+                apples[I].manzana.transform.SetParent(container.transform);
             }
 
+            // we restore true randomess
+            Random.InitState(System.Environment.TickCount);
         }
 
-        private ILot[,] GenerateGrid(float seed)
+        private ILot[,] GenerateGrid()
         {
             ILot[,] grid = new ILot[mapWidth, mapHeight];
 
@@ -98,14 +100,34 @@ namespace CityGenerator
                 if (z >= mapHeight) break;
             }
 
+            // get cross streets
+            if (randomStreets)
+                for (x = 0; x < grid.GetLength(0); x++)
+                {
+                    for (z = 0; z < grid.GetLength(1); z++)
+                    {
+                        if ((grid[x, z] != null && grid[x, z].lotType == LotType.Street) &&
+                            canBuildRandomStreet(grid, x, z) && Random.Range(0, 10) > 8)
+                        {
+                            while ((++z < grid.GetLength(1)) &&
+                                   (grid[x, z] == null || grid[x, z].lotType != LotType.Street))
+                            {
+                                grid[x, z] = new Street(xStreets, new Vector2(x, z));
+                            }
+                        }
+                    }
+                }
+
             // add buildings
+            float perlinSeed = Random.Range(0f, 40f);
+
             for (int h = 0; h < mapHeight; h++)
             {
                 for (int w = 0; w < mapWidth; w++)
                 {
                     if (grid[w, h] == null || grid[w, h].lotType != LotType.Street)
                     {
-                        float perlin = Mathf.PerlinNoise(w / 10f + seed, h / 10f + seed) * 10;
+                        float perlin = Mathf.PerlinNoise(w / 10f + perlinSeed, h / 10f + perlinSeed) * 10;
                         grid[w, h] = new Lot(new Vector2(w, h), GetNeighborhoodFromNoise(perlin));
                     }
                     grid[w, h].worldPos = new Vector3(w * buildingFootprint, 0, h * buildingFootprint);
@@ -115,9 +137,22 @@ namespace CityGenerator
             return grid;
         }
 
+        private bool canBuildRandomStreet(ILot[,] grid, int x, int z)
+        {
+            if (x <= 0 || x >= grid.GetLength(0) - 1 ||z <= 0 ||z >= grid.GetLength(1) - 1)
+                return false;
+    
+            ILot[] lots = new ILot[] {grid[x +1, z + 1], grid[x-1, z + 1]};
+            foreach (ILot lot in lots)
+            {
+                if (lot != null && lot.lotType == LotType.Street)
+                    return false;
+            }
+            return true;
+        }
+
         private void InstantiateGridElements(ILot[,] lots)
         {
-            container = new GameObject("CityContainer");
             container.transform.position = Vector3.zero;
             for (int x = 0; x < lots.GetLength(0); x++)
             {
@@ -131,6 +166,24 @@ namespace CityGenerator
                         lotGo = Instantiate(lot.buildings[Random.Range(0, lot.buildings.Length - 1)],
                             lot.worldPos, Quaternion.identity);
                     lotGo.transform.SetParent(container.transform);
+                }
+            }
+        }
+
+        private void InstantiateStreets(ILot[,] lots)
+        {
+            for (int i = 0; i < lots.GetLength(0); i++)
+            {
+                for (int j = 0; j < lots.GetLength(1); j++)
+                {
+                    //descomente esto para que solo cree las calles, los edificios se crean en el objeto Apple.
+                    if (lots[i, j].lotType == LotType.Street) 
+                    {
+                        GameObject street =
+                            Instantiate(lots[i, j].buildings[0], lots[i, j].worldPos,
+                                lots[i, j].buildings[0].transform.rotation);
+                        street.transform.SetParent(container.transform);
+                    }
                 }
             }
         }
@@ -149,7 +202,8 @@ namespace CityGenerator
                         {
                             GenerateApple(lots, x, z, apple);
                             Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
-                            apples.Add(newApple); //<Jc> agrego a la lista de manzanas
+                            newApple.BuildApple();//creo las manzanas
+                            apples.Add(newApple); 
                             apple.Clear();
                         }
                     }
@@ -193,8 +247,10 @@ namespace CityGenerator
         {
             if (Input.GetKeyDown(KeyCode.L))
             {
+
                 Destroy(container);
                 container = null;
+                apples.Clear();
                 GC.Collect();
                 GenerateMap();
             }
@@ -205,6 +261,28 @@ namespace CityGenerator
             if (Input.GetKeyDown(KeyCode.A))
                 container.SetActive(!container.activeSelf);
         }
+
+        /*
+         * 26/10/17: Por si nos sirve para el input.
+         * 
+        public void Input_Generate()
+        {
+            Destroy(container);
+            container = null;
+            GC.Collect();
+            GenerateMap();
+        }
+
+        public void Input_Draw()
+        {
+            DrawNeighboor();
+        }
+
+        public void Input_SetActive()
+        {
+            container.SetActive(!container.activeSelf);
+        }
+        */
 
         private void DrawNeighboor()
         {
@@ -229,10 +307,26 @@ namespace CityGenerator
 
         private Neighborhood GetNeighborhoodFromNoise(float result)
         {
-            float rule3 = ((_neighborhoods.Length - 1) / 10f) * result;
+            if (neighborhoods.Length > 0)
+            {
+                int totalChance = 0;
+                foreach (Neighborhood ng in neighborhoods)
+                {
+                    totalChance += ng.ChanceToAppear;
+                }
+                // Usamos regla de tres simple con ruleta no se que cosa para permitir que se decida las chances 
+                // de que aparezca algo en base al porcentaje que el usuario le dio.
+                float newChance = (totalChance / 10f) * result;
+                int currentChances = 0;
+                for (int i = 0; i < neighborhoods.Length; i++)
+                {
+                    currentChances += neighborhoods[i].ChanceToAppear;
 
-            int currentIndex = Mathf.RoundToInt(rule3);
-            return _neighborhoods[currentIndex];
+                    if (currentChances > newChance)
+                        return neighborhoods[i];
+                }
+            }
+            return new Neighborhood();
         }
     }
 }

@@ -45,7 +45,7 @@ namespace CityGenerator
         public enum streetType
         {
             xStreet,
-            zStreert,
+            zStreet,
             Crossroad
         }
 
@@ -58,13 +58,34 @@ namespace CityGenerator
         }
     }
 
+    public class Grass : ILot 
+    {
+        public Vector2 gridPos { get; private set; }
+        public Vector3 worldPos { get; set; }
+        public GameObject[] buildings { get; private set; }
+        public Lot neighboor;
+
+        public LotType lotType
+        {
+            get { return LotType.grass; }
+        }
+
+        public Grass(Vector2 _gridPos, Neighborhood neighborhood)
+        {
+            gridPos = _gridPos;
+            buildings = neighborhood.buildings;
+        }
+    }
+
+
     public enum LotType
     {
         Street,
-        Lot
+        Lot,
+        grass
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Neighborhood
     {
         public GameObject[] buildings;
