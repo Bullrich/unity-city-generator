@@ -2,7 +2,7 @@
 
 namespace CityGenerator
 {
-    public class Apple
+    public class Apple : MonoBehaviour
     {
         public Vector2 size { get; private set; }
         public Lot[] appleLots { get; private set; }
@@ -12,6 +12,14 @@ namespace CityGenerator
 
         private static int _nPadre = 0; //para ir contando la cantidad de padres que genero
 
+        //ángulo de rotación de los edificios
+        private const int C_ANGULO1=1;
+        private const int C_ANGULO2 =2;
+        private const int C_ANGULO3 = 3;
+        private const int C_ANGULO4 = 4;
+
+        
+
         public GameObject manzana
         {
             get
@@ -19,7 +27,6 @@ namespace CityGenerator
                 return _objPadre;
             }
         }
-
 
         /// <summary>
         /// 
@@ -53,10 +60,10 @@ namespace CityGenerator
             return container;
             */
             #endregion
-            
 
-            
-             try
+
+
+            try
             {
                 _objPadre = new GameObject("Parent_" + _nPadre + " " + string.Format("Apple {0}/{1}", size.x, size.y));
                 _nPadre++;
@@ -64,13 +71,37 @@ namespace CityGenerator
 
                 for (int I=0;I<appleLots.Length;I++)
                 {
-
+                    
                     if (I == 0) //seteo el gameobject padre en la posición del primer cubo de la manzana
                     {
                         _objPadre.transform.position = appleLots[I].worldPos;
                     }
-                    GameObject auxObj = UnityEngine.GameObject.Instantiate(appleLots[I].buildings[Random.Range(0, appleLots[I].buildings.Length -1)],
-                          appleLots[I].worldPos, Quaternion.identity); //le pongo el cubo de la grilla en el gameobject auxiliar
+
+                    GameObject auxObj = UnityEngine.GameObject.Instantiate(appleLots[I].buildings[Random.Range(0, appleLots[I].buildings.Length - 1)],
+                            appleLots[I].worldPos, Quaternion.identity); //le pongo el cubo de la grilla en el gameobject auxiliar
+
+                    int DirRotacion = Random.Range(0, 3); //agrego una rotación a los edificios para hacer mas random el diseño
+                    float angulin=0;
+                    switch (DirRotacion)
+                    {
+                        case C_ANGULO1:
+                            angulin = 0f;
+                            break;
+
+                        case C_ANGULO2:
+                            angulin = 90f;
+                            break;
+
+                        case C_ANGULO3:
+                            angulin = 180f;
+                            break;
+
+                        case C_ANGULO4:
+                            angulin = 270f;
+                            break;
+                    }
+                    auxObj.transform.Rotate(0f, angulin, 0f);
+
                     auxObj.transform.SetParent(_objPadre.transform);
                 }
 
@@ -79,6 +110,7 @@ namespace CityGenerator
             }
             catch(System.Exception Err)
             {
+                Debug.Log("ERROR ERROR Y ERROR");
                 Debug.Log(Err.Message);
                 return null;
             }

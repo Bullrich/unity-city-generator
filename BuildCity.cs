@@ -61,7 +61,6 @@ namespace CityGenerator
             CalculateCityLots(map);
             InstantiateStreets(map);
 
-            //auxObj.transform.SetParent(_objPadre.transform);
             for (int I=0;I<apples.Count; I++)
             {
                 apples[I].manzana.transform.SetParent(container.transform);
