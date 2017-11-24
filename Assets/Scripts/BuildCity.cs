@@ -60,6 +60,12 @@ namespace CityGenerator
 
             CalculateCityLots(map);
             InstantiateStreets(map);
+
+            for (int I=0;I<apples.Count; I++)
+            {
+                apples[I].manzana.transform.SetParent(container.transform);
+            }
+
             // we restore true randomess
             Random.InitState(System.Environment.TickCount);
         }
@@ -170,7 +176,8 @@ namespace CityGenerator
             {
                 for (int j = 0; j < lots.GetLength(1); j++)
                 {
-                    //if (lots[i, j].lotType == LotType.Street)
+                    //descomente esto para que solo cree las calles, los edificios se crean en el objeto Apple.
+                    if (lots[i, j].lotType == LotType.Street) 
                     {
                         GameObject street =
                             Instantiate(lots[i, j].buildings[0], lots[i, j].worldPos,
@@ -195,7 +202,8 @@ namespace CityGenerator
                         {
                             GenerateApple(lots, x, z, apple);
                             Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
-                            apples.Add(newApple);
+                            newApple.BuildApple();//creo las manzanas
+                            apples.Add(newApple); 
                             apple.Clear();
                         }
                     }
