@@ -10,7 +10,7 @@ namespace CityGenerator
     public class CityBuilderCustomEditor : Editor
     {
         BuildCity _target;
-        Vector2Int widthHeight;
+        Vector2 widthHeight;
         Dictionary<int, bool> foldoutsNeighborhoods = new Dictionary<int, bool>();
 
         private void OnEnable()
@@ -29,7 +29,9 @@ namespace CityGenerator
             EditorGUILayout.LabelField("City Generator", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("by Javier Bullrich, Juan Cruz Araujo, Iván Ramos - © 2017", EditorStyles.miniLabel);
             EditorGUILayout.Space();
-            EditorGUILayout.HelpBox("Controls = L: Generate | M: Draw | A: Toggle Active", MessageType.None);
+            //EditorGUILayout.HelpBox("Controls = L: Generate | M: Draw | A: Toggle Active", MessageType.None);
+            if(GUILayout.Button("Generate City"))
+                _target.Regenerate();
             EditorGUILayout.Space();
             SetGameObjects();
             EditorGUILayout.Space();
@@ -73,9 +75,9 @@ namespace CityGenerator
         {
             EditorGUILayout.LabelField("Set city size:", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            widthHeight = EditorGUILayout.Vector2IntField("Width | Height", widthHeight);
-            _target.mapWidth = widthHeight.x;
-            _target.mapHeight = widthHeight.y;
+            widthHeight = EditorGUILayout.Vector2Field("Width | Height", widthHeight);
+            _target.mapWidth = (int)widthHeight.x;
+            _target.mapHeight = (int)widthHeight.y;
             EditorGUILayout.EndHorizontal();
             if (_target.mapWidth < 0) EditorGUILayout.HelpBox("Map Width must be a positive value.", MessageType.Error);
             else if (_target.mapWidth == 0) EditorGUILayout.HelpBox("Map Width must not be zero. A city of width 0 is literally nothing, don't get metaphysical with me!", MessageType.Error);

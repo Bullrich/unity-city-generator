@@ -234,16 +234,21 @@ namespace CityGenerator
                 }
             }
         }
+        public void Regenerate()
+        {
+            container = GameObject.Find("CityContainer");
+            DestroyImmediate(container);
+            container = null;
+            apples.Clear();
+            GC.Collect();
+            GenerateMap();
+        }
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.L))
             {
-                Destroy(container);
-                container = null;
-                apples.Clear();
-                GC.Collect();
-                GenerateMap();
+                Regenerate();
             }
             else if (Input.GetKey(KeyCode.M))
             {
