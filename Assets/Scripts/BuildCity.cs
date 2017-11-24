@@ -29,7 +29,7 @@ namespace CityGenerator
             get { return 3; }
         }
 
-        public Neighborhood[] neighborhoods;
+        public List<Neighborhood> neighborhoods;
 
         private GameObject container;
 
@@ -60,6 +60,12 @@ namespace CityGenerator
 
             CalculateCityLots(map);
             InstantiateStreets(map);
+
+            for (int I=0;I<apples.Count; I++)
+            {
+                apples[I].manzana.transform.SetParent(container.transform);
+            }
+
             // we restore true randomess
             Random.InitState(System.Environment.TickCount);
         }
@@ -157,7 +163,7 @@ namespace CityGenerator
                     if (lot.lotType == LotType.Street)
                         lotGo = Instantiate(lot.buildings[0], lot.worldPos, lot.buildings[0].transform.rotation);
                     else
-                        lotGo = Instantiate(lot.buildings[Random.Range(0, lot.buildings.Length - 1)],
+                        lotGo = Instantiate(lot.buildings[Random.Range(0, lot.buildings.Count - 1)],
                             lot.worldPos, Quaternion.identity);
                     lotGo.transform.SetParent(container.transform);
                 }
@@ -170,7 +176,8 @@ namespace CityGenerator
             {
                 for (int j = 0; j < lots.GetLength(1); j++)
                 {
-                    //if (lots[i, j].lotType == LotType.Street)
+                    //descomente esto para que solo cree las calles, los edificios se crean en el objeto Apple.
+                    if (lots[i, j].lotType == LotType.Street) 
                     {
                         GameObject street =
                             Instantiate(lots[i, j].buildings[0], lots[i, j].worldPos,
@@ -195,7 +202,8 @@ namespace CityGenerator
                         {
                             GenerateApple(lots, x, z, apple);
                             Apple newApple = new Apple(GetAppleSize(apple), apple.ToArray());
-                            apples.Add(newApple);
+                            newApple.BuildApple();//creo las manzanas
+                            apples.Add(newApple); 
                             apple.Clear();
                         }
                     }
@@ -234,16 +242,21 @@ namespace CityGenerator
                 }
             }
         }
+        public void Regenerate()
+        {
+            container = GameObject.Find("CityContainer");
+            DestroyImmediate(container);
+            container = null;
+            apples.Clear();
+            GC.Collect();
+            GenerateMap();
+        }
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.L))
             {
-                Destroy(container);
-                container = null;
-                apples.Clear();
-                GC.Collect();
-                GenerateMap();
+                Regenerate();
             }
             else if (Input.GetKey(KeyCode.M))
             {
@@ -252,28 +265,6 @@ namespace CityGenerator
             if (Input.GetKeyDown(KeyCode.A))
                 container.SetActive(!container.activeSelf);
         }
-
-        /*
-         * 26/10/17: Por si nos sirve para el input.
-         * 
-        public void Input_Generate()
-        {
-            Destroy(container);
-            container = null;
-            GC.Collect();
-            GenerateMap();
-        }
-
-        public void Input_Draw()
-        {
-            DrawNeighboor();
-        }
-
-        public void Input_SetActive()
-        {
-            container.SetActive(!container.activeSelf);
-        }
-        */
 
         private void DrawNeighboor()
         {
@@ -298,7 +289,7 @@ namespace CityGenerator
 
         private Neighborhood GetNeighborhoodFromNoise(float result)
         {
-            if (neighborhoods.Length > 0)
+            if (neighborhoods.Count > 0)
             {
                 int totalChance = 0;
                 foreach (Neighborhood ng in neighborhoods)
@@ -309,7 +300,7 @@ namespace CityGenerator
                 // de que aparezca algo en base al porcentaje que el usuario le dio.
                 float newChance = (totalChance / 10f) * result;
                 int currentChances = 0;
-                for (int i = 0; i < neighborhoods.Length; i++)
+                for (int i = 0; i < neighborhoods.Count; i++)
                 {
                     currentChances += neighborhoods[i].ChanceToAppear;
 
