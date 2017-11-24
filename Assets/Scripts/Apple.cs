@@ -34,7 +34,7 @@ namespace CityGenerator
             container.transform.position = Vector3.zero;
             foreach (Lot lot in appleLots)
             {
-                GameObject lotGo = MonoBehaviour.Instantiate(lot.buildings[Random.Range(0, lot.buildings.Length - 1)],
+                GameObject lotGo = MonoBehaviour.Instantiate(lot.buildings[Random.Range(0, lot.buildings.Count - 1)],
                     lot.worldPos, Quaternion.identity);
                 lotGo.transform.SetParent(container.transform);
             }
