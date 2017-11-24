@@ -51,35 +51,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efdcc916c15074f499d93a286474e9e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildings:
-  - {fileID: 141268, guid: b3d3a7ba5f4d42943920370ae1696723, type: 2}
-  - {fileID: 147108, guid: 3d01ef65dd7df27469c08a5faaf917bd, type: 2}
-  - {fileID: 151704, guid: 43cefcf568e58d84d802bbb3c6a74777, type: 2}
-  - {fileID: 189348, guid: d597a8fa6b192c545bbae896e4d42a21, type: 2}
-  - {fileID: 117616, guid: b2fcb4869e568194ebff11fc13530282, type: 2}
-  - {fileID: 1754488902340108, guid: 5e3fbdc1740a86e43a0693f5b46687b1, type: 2}
-  xStreets: {fileID: 1477758458555386, guid: f57a3a5ec0efd1d4abc5449be84fd5d0, type: 2}
-  zStreets: {fileID: 1275999793250588, guid: be68cb4a9ac64ce48b165f5350d8963d, type: 2}
+  xStreets: {fileID: 1478228887440212, guid: 0429393a19ea54343bc149524cbbc2a2, type: 2}
+  zStreets: {fileID: 1478228887440212, guid: 0429393a19ea54343bc149524cbbc2a2, type: 2}
   crossRoad: {fileID: 1916371864499812, guid: 58ba92cefb11e52489b1582fdddefa70, type: 2}
   mapWidth: 20
   mapHeight: 20
-  _neighborhoods:
+  seed: 0
+  randomSeed: 1
+  neighborhoods:
   - buildings:
     - {fileID: 141268, guid: b3d3a7ba5f4d42943920370ae1696723, type: 2}
-    ChanceToAppear: 36
+    ChanceToAppear: 14
   - buildings:
     - {fileID: 147108, guid: 3d01ef65dd7df27469c08a5faaf917bd, type: 2}
-    ChanceToAppear: 36
-  - buildings:
     - {fileID: 151704, guid: 43cefcf568e58d84d802bbb3c6a74777, type: 2}
-    ChanceToAppear: 36
+    ChanceToAppear: 15
   - buildings:
     - {fileID: 189348, guid: d597a8fa6b192c545bbae896e4d42a21, type: 2}
-    ChanceToAppear: 36
-  - buildings:
     - {fileID: 117616, guid: b2fcb4869e568194ebff11fc13530282, type: 2}
-    ChanceToAppear: 36
+    ChanceToAppear: 11
   - buildings:
     - {fileID: 1754488902340108, guid: 5e3fbdc1740a86e43a0693f5b46687b1, type: 2}
-    ChanceToAppear: 36
-  showApples: 1
+    ChanceToAppear: 90
